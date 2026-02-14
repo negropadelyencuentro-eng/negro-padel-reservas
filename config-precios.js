@@ -1,47 +1,42 @@
 // =========================================
 // CONFIGURACIÓN DE PRECIOS - NEGRO PADEL
+// Generado automáticamente: 14/2/2026, 07:18:45
 // =========================================
-// Editá este archivo para cambiar los precios
 
 const PRECIOS_CONFIG = {
-  // Precios base por horario y día
   precios: {
-    // Lunes a Viernes
     semana: {
-      '09:00': 10000,
-      '10:30': 10000,
-      '12:00': 16000,
-      '14:00': 16000,
-      '15:30': 16000,
-      '17:00': 16000,
-      '18:30': 20000,
-      '20:00': 20000,
-      '21:30': 20000,
-      '23:00': 20000
-    },
-    // Sábados y Domingos
+      "09:00": 10000,
+      "10:30": 10000,
+      "12:00": 16000,
+      "14:00": 16000,
+      "15:30": 16000,
+      "17:00": 16000,
+      "18:30": 20000,
+      "20:00": 20000,
+      "21:30": 20000,
+      "23:00": 20000
+},
     finDeSemana: {
-      '09:00': 16000,
-      '10:30': 16000,
-      '12:00': 16000,
-      '14:00': 16000,
-      '15:30': 16000,
-      '17:00': 16000,
-      '18:30': 20000,
-      '20:00': 20000,
-      '21:30': 20000,
-      '23:00': 20000
-    }
+      "09:00": 16000,
+      "10:30": 16000,
+      "12:00": 16000,
+      "14:00": 16000,
+      "15:30": 16000,
+      "17:00": 16000,
+      "18:30": 20000,
+      "20:00": 20000,
+      "21:30": 20000,
+      "23:00": 20000
+}
   },
   
-  // Descuento cuando falta poco para el turno
   descuentoUltimaHora: {
     activo: true,
-    porcentaje: 10,  // 10% de descuento
-    minutosAntes: 90 // Cuando faltan 90 minutos (1.5 horas)
+    porcentaje: 10,
+    minutosAntes: 90
   },
   
-  // Configuración de WhatsApp
   whatsapp: {
     numero: '5493584294011'
   }
