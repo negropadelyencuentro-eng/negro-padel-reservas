@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEGRO PADEL - Panel de Administración</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .admin-controls {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 3px solid #dee2e6;
+        }
+
+        .control-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+
+        .control-section h3 {
+            margin-bottom: 15px;
+            color: #343a40;
+            font-size: 1.1em;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+            color: #212529;
+        }
+
+        .btn-warning:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+        }
+
+        .schedule-container {
+            padding: 30px;
+            overflow-x: auto;
+        }
+
+        .week-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 15px;
+            min-width: 1200px;
+        }
+
+        .day-column {
+            background: #f8f9fa;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .day-header {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .day-header .day-name {
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+
+        .day-header .date {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .time-slots {
+            padding: 10px;
+        }
+
+        .time-slot {
+            margin-bottom: 8px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #dee2e6;
+            background: white;
+            position: relative;
+        }
+
+        .time-slot.fixed {
+            border-color: #ffc107;
+            background: #fff3cd;
+        }
+
+        .fixed-badge {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #ffc107;
+            color: #212529;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.7em;
+            font-weight: bold;
+        }
+
+        .slot-content {
+            padding: 10px;
+        }
+
+        .slot-time {
+            font-weight: bold;
+            font-size: 1em;
+            color: #495057;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .slot-player-input {
+            display: flex;
+            gap: 5px;
+        }
+
+        .slot-player-input input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+        }
+
+        .slot-player-input input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+        }
+
+        .slot-player-input button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s ease;
+            font-size: 0.85em;
+        }
+
+        .btn-add {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-add:hover {
+            background: #218838;
+        }
+
+        .btn-remove {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-remove:hover {
+            background: #c82333;
+        }
+
+        .btn-fixed {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-fixed:hover {
+            background: #e0a800;
+        }
+
+        .occupied-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            background: #e9ecef;
+            border-radius: 5px;
+            gap: 5px;
+        }
+
+        .occupied-info span {
+            font-weight: bold;
+            color: #495057;
+            text-transform: uppercase;
+            flex: 1;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            margin: 20px;
+            border-radius: 10px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            margin-top: 5px;
+            font-size: 0.9em;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            color: #343a40;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .week-grid {
+                grid-template-columns: 1fr;
+                min-width: auto;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .control-buttons {
+                flex-direction: column;
+            }
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .message.active {
+            display: block;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .info-box {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+        }
+
+        .info-box strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 Panel de Administración 🔧</h1>
+            <p>Gestiona las reservas de la cancha - Conectado a Google Sheets</p>
+        </div>
+
+        <div class="admin-controls">
+            <div class="control-section">
+                <h3>ℹ️ Información de la Semana</h3>
+                <div class="info-box">
+                    <strong>📅 Semana Móvil Automática:</strong> La aplicación muestra siempre los próximos 7 días desde hoy. Se actualiza automáticamente cada día. Los turnos fijos se mantienen en sus días de la semana correspondientes.
+                    <br><br>
+                    <strong>☁️ Conectado a Google Sheets:</strong> Todos los cambios se guardan automáticamente en tu planilla de Google Sheets.
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>🔧 Herramientas</h3>
+                <div class="control-buttons">
+                    <button class="btn btn-primary" onclick="recargarDatos()">🔄 Recargar Datos</button>
+                    <button class="btn btn-warning" onclick="confirmClearNonFixed()">🗑️ Limpiar Solo Reservas Normales</button>
+                    <button class="btn btn-danger" onclick="confirmClearAll()">⚠️ Limpiar TODO</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="message" class="message"></div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalSlots">0</div>
+                <div class="stat-label">Total de Turnos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="occupiedSlots">0</div>
+                <div class="stat-label">Turnos Reservados</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="fixedSlots">0</div>
+                <div class="stat-label">Turnos Fijos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="availableSlots">0</div>
+                <div class="stat-label">Turnos Disponibles</div>
+            </div>
+        </div>
+
+        <div class="schedule-container">
+            <div id="schedule" class="loading">Cargando turnos desde Google Sheets...</div>
+        </div>
+    </div>
+
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <h2>⚠️ Confirmar Acción</h2>
+            <p id="modalMessage"></p>
+            <div class="modal-buttons">
+                <button class="btn btn-danger" onclick="executeModalAction()">Confirmar</button>
+                <button class="btn btn-primary" onclick="closeModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURACIÓN DE LA API
+        const API_URL = 'https://script.google.com/macros/s/AKfycbyd4O4dWAUnUgGeyok35PCeGSRAbxLu4uLfh6_WQQiOYSREVlkX6Dpru7sI3Fiuusn0/exec';
+        
+        // Estructura de datos para los turnos
+        const scheduleData = {
+            week: [],
+            fixedSlotsByDay: {},
+            timeSlots: [
+                '09:00', '10:30', '12:00', '14:00', '15:30', 
+                '17:00', '18:30', '20:00', '21:30', '23:00'
+            ]
+        };
+
+        let modalAction = null;
+
+        // Cargar datos desde Google Sheets
+        async function loadScheduleData() {
+            try {
+                showMessage('Cargando datos desde Google Sheets...', 'info');
+                
+                const response = await fetch(`${API_URL}?action=getTurnos`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    scheduleData.week = result.data.week;
+                    scheduleData.fixedSlotsByDay = result.data.fixedSlotsByDay || {};
+                    
+                    renderSchedule();
+                    updateStats();
+                    showMessage('Datos cargados correctamente', 'success');
+                } else {
+                    throw new Error(result.error || 'Error al cargar datos');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Error al cargar datos: ' + error.message, 'error');
+                document.getElementById('schedule').innerHTML = 
+                    '<div class="loading">Error al conectar con Google Sheets. Verificá tu conexión.</div>';
+            }
+        }
+
+        function renderSchedule() {
+            const scheduleDiv = document.getElementById('schedule');
+            const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            
+            let html = '<div class="week-grid">';
+            
+            scheduleData.week.forEach((day, dayIndex) => {
+                const monthName = monthNames[parseInt(day.month) - 1];
+                
+                html += `
+                    <div class="day-column">
+                        <div class="day-header">
+                            <div class="day-name">${day.day}</div>
+                            <div class="date">${day.date} ${monthName}</div>
+                        </div>
+                        <div class="time-slots">
+                `;
+                
+                scheduleData.timeSlots.forEach(time => {
+                    const isOccupied = day.slots[time];
+                    const isFixed = scheduleData.fixedSlotsByDay[day.day] && scheduleData.fixedSlotsByDay[day.day][time];
+                    const slotClass = isFixed ? 'fixed' : '';
+                    
+                    if (isOccupied) {
+                        html += `
+                            <div class="time-slot ${slotClass}">
+                                ${isFixed ? '<div class="fixed-badge">FIJO</div>' : ''}
+                                <div class="slot-content">
+                                    <div class="slot-time">${time}</div>
+                                    <div class="occupied-info">
+                                        <span>${isOccupied}</span>
+                                        <button class="btn-remove" onclick="removePlayer('${day.dateKey}', '${day.day}', '${time}', ${isFixed})" title="Eliminar">✕</button>
+                                        ${isFixed ? 
+                                            `<button class="btn-fixed" onclick="toggleFixed('${day.day}', '${time}', '${isOccupied}', true)" title="Quitar de fijos">📌</button>` :
+                                            `<button class="btn-fixed" onclick="toggleFixed('${day.day}', '${time}', '${isOccupied}', false)" title="Marcar como fijo">📍</button>`
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        html += `
+                            <div class="time-slot ${slotClass}">
+                                <div class="slot-content">
+                                    <div class="slot-time">${time}</div>
+                                    <div class="slot-player-input">
+                                        <input type="text" 
+                                               id="input-${dayIndex}-${time}" 
+                                               placeholder="Nombre"
+                                               onkeypress="handleEnter(event, '${day.dateKey}', '${day.day}', '${time}')">
+                                        <button class="btn-add" onclick="addPlayer('${day.dateKey}', '${day.day}', '${time}')">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+                
+                html += `
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            scheduleDiv.innerHTML = html;
+        }
+
+        function handleEnter(event, dateKey, day, time) {
+            if (event.key === 'Enter') {
+                addPlayer(dateKey, day, time);
+            }
+        }
+
+        async function addPlayer(dateKey, day, time) {
+            const dayIndex = scheduleData.week.findIndex(d => d.dateKey === dateKey);
+            const input = document.getElementById(`input-${dayIndex}-${time}`);
+            const playerName = input.value.trim().toUpperCase();
+            
+            if (!playerName) {
+                showMessage('Ingresá un nombre', 'error');
+                return;
+            }
+
+            try {
+                disableButtons(true);
+                showMessage('Guardando reserva...', 'info');
+                
+                const response = await fetch(`${API_URL}?action=agregarReserva`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        dateKey: dateKey,
+                        day: day,
+                        time: time,
+                        name: playerName,
+                        isFixed: false
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    await loadScheduleData();
+                    showMessage(`Reserva agregada: ${playerName} - ${day} ${time}`, 'success');
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Error al agregar reserva: ' + error.message, 'error');
+            } finally {
+                disableButtons(false);
+            }
+        }
+
+        async function removePlayer(dateKey, day, time, isFixed) {
+            try {
+                disableButtons(true);
+                showMessage('Eliminando reserva...', 'info');
+                
+                const response = await fetch(`${API_URL}?action=eliminarReserva`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        dateKey: dateKey,
+                        day: day,
+                        time: time,
+                        isFixed: isFixed
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    await loadScheduleData();
+                    showMessage('Reserva eliminada correctamente', 'success');
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Error al eliminar reserva: ' + error.message, 'error');
+            } finally {
+                disableButtons(false);
+            }
+        }
+
+        async function toggleFixed(day, time, name, isCurrentlyFixed) {
+            try {
+                disableButtons(true);
+                showMessage(isCurrentlyFixed ? 'Quitando de fijos...' : 'Marcando como fijo...', 'info');
+                
+                const response = await fetch(`${API_URL}?action=toggleTurnoFijo`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        day: day,
+                        time: time,
+                        name: name,
+                        isCurrentlyFixed: isCurrentlyFixed
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    await loadScheduleData();
+                    showMessage(result.data.message, 'success');
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Error al actualizar turno fijo: ' + error.message, 'error');
+            } finally {
+                disableButtons(false);
+            }
+        }
+
+        function updateStats() {
+            const totalSlots = scheduleData.week.length * scheduleData.timeSlots.length;
+            let occupiedCount = 0;
+            let fixedCount = 0;
+            
+            scheduleData.week.forEach(day => {
+                occupiedCount += Object.keys(day.slots).length;
+            });
+            
+            Object.values(scheduleData.fixedSlotsByDay).forEach(daySlots => {
+                fixedCount += Object.keys(daySlots).length;
+            });
+            
+            const availableCount = totalSlots - occupiedCount;
+            
+            document.getElementById('totalSlots').textContent = totalSlots;
+            document.getElementById('occupiedSlots').textContent = occupiedCount;
+            document.getElementById('fixedSlots').textContent = fixedCount;
+            document.getElementById('availableSlots').textContent = availableCount;
+        }
+
+        function confirmClearNonFixed() {
+            document.getElementById('modalMessage').textContent = 
+                '¿Querés eliminar todas las reservas NORMALES? Los turnos FIJOS se mantendrán.';
+            modalAction = clearNonFixedSlots;
+            document.getElementById('confirmModal').classList.add('active');
+        }
+
+        async function clearNonFixedSlots() {
+            try {
+                disableButtons(true);
+                closeModal();
+                showMessage('Limpiando reservas normales...', 'info');
+                
+                const response = await fetch(`${API_URL}?action=limpiarReservasNormales`, {
+                    method: 'POST',
+                    body: JSON.stringify({})
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    await loadScheduleData();
+                    showMessage('Reservas normales eliminadas. Los turnos fijos se mantuvieron.', 'success');
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Error al limpiar reservas: ' + error.message, 'error');
+            } finally {
+                disableButtons(false);
+            }
+        }
+
+        function confirmClearAll() {
+            document.getElementById('modalMessage').textContent = 
+                '¿Estás seguro de que querés eliminar TODAS las reservas incluyendo las FIJAS? Esta acción no se puede deshacer.';
+            modalAction = clearAllSlots;
+            document.getElementById('confirmModal').classList.add('active');
+        }
+
+        async function clearAllSlots() {
+            try {
+                disableButtons(true);
+                closeModal();
+                showMessage('Eliminando todos los turnos...', 'info');
+                
+                const response = await fetch(`${API_URL}?action=limpiarTodo`, {
+                    method: 'POST',
+                    body: JSON.stringify({})
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    await loadScheduleData();
+                    showMessage('Todos los turnos fueron eliminados', 'success');
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Error al limpiar turnos: ' + error.message, 'error');
+            } finally {
+                disableButtons(false);
+            }
+        }
+
+        function executeModalAction() {
+            if (modalAction) {
+                modalAction();
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('confirmModal').classList.remove('active');
+            modalAction = null;
+        }
+
+        function showMessage(message, type) {
+            const msgDiv = document.getElementById('message');
+            msgDiv.textContent = message;
+            msgDiv.className = `message ${type} active`;
+            
+            if (type !== 'info') {
+                setTimeout(() => {
+                    msgDiv.classList.remove('active');
+                }, 5000);
+            }
+        }
+
+        function disableButtons(disabled) {
+            document.querySelectorAll('button').forEach(btn => {
+                btn.disabled = disabled;
+            });
+        }
+
+        function recargarDatos() {
+            loadScheduleData();
+        }
+
+        // Inicializar
+        loadScheduleData();
+        
+        // Actualizar cada 5 minutos
+        setInterval(loadScheduleData, 300000);
+    </script>
+</body>
+</html>

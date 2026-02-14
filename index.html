@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEGRO PADEL - Reservas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #000000 0%, #333333 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .header p {
+            font-size: 1em;
+            opacity: 0.9;
+        }
+
+        .schedule-container {
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        .week-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            min-width: 700px;
+        }
+
+        .day-column {
+            background: #f8f9fa;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .day-header {
+            background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.85em;
+        }
+
+        .day-header .day-name {
+            font-size: 1em;
+            margin-bottom: 3px;
+        }
+
+        .day-header .date {
+            font-size: 0.85em;
+            opacity: 0.9;
+        }
+
+        .time-slots {
+            padding: 6px;
+        }
+
+        .time-slot {
+            margin-bottom: 6px;
+            border-radius: 6px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .time-slot.available {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            cursor: pointer;
+            border-color: #28a745;
+        }
+
+        .time-slot.available:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+        }
+
+        .time-slot.occupied {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .slot-content {
+            padding: 8px;
+            color: white;
+            text-align: center;
+        }
+
+        .slot-time {
+            font-weight: bold;
+            font-size: 0.9em;
+            margin-bottom: 3px;
+        }
+
+        .slot-status {
+            font-size: 0.75em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            margin-top: 20px;
+            border-radius: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .legend-color {
+            width: 30px;
+            height: 30px;
+            border-radius: 5px;
+        }
+
+        .legend-color.available {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .legend-color.occupied {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+
+        @media (max-width: 768px) {
+            .week-grid {
+                grid-template-columns: 1fr;
+                min-width: auto;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .schedule-container {
+                padding: 15px;
+            }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2em;
+            color: #666;
+        }
+
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎾 NEGRO PADEL Y ENCUENTRO 🎾</h1>
+            <p>Hacé click en el turno que querés reservar</p>
+        </div>
+
+        <div class="schedule-container">
+            <div id="schedule" class="loading">
+                Cargando turnos disponibles...
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color available"></div>
+                <span><strong>Disponible</strong> - Click para reservar</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color occupied"></div>
+                <span><strong>Ocupado</strong></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURACIÓN
+        const API_URL = 'https://script.google.com/macros/s/AKfycbyd4O4dWAUnUgGeyok35PCeGSRAbxLu4uLfh6_WQQiOYSREVlkX6Dpru7sI3Fiuusn0/exec';
+        const WHATSAPP_NUMBER = '5491112345678'; // ⚠️ REEMPLAZÁ con tu número de WhatsApp
+        
+        // Estructura de datos para los turnos
+        const scheduleData = {
+            week: [],
+            timeSlots: [
+                '09:00', '10:30', '12:00', '14:00', '15:30', 
+                '17:00', '18:30', '20:00', '21:30', '23:00'
+            ]
+        };
+
+        // Cargar datos desde Google Sheets
+        async function loadScheduleData() {
+            try {
+                const response = await fetch(`${API_URL}?action=getTurnos`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    scheduleData.week = result.data.week;
+                    renderSchedule();
+                } else {
+                    throw new Error(result.error || 'Error al cargar datos');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('schedule').innerHTML = 
+                    '<div class="error">Error al cargar turnos. Por favor, recargá la página.</div>';
+            }
+        }
+
+        function renderSchedule() {
+            const scheduleDiv = document.getElementById('schedule');
+            const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            
+            let html = '<div class="week-grid">';
+            
+            scheduleData.week.forEach((day, dayIndex) => {
+                const monthName = monthNames[parseInt(day.month) - 1];
+                
+                html += `
+                    <div class="day-column">
+                        <div class="day-header">
+                            <div class="day-name">${day.day}</div>
+                            <div class="date">${day.date} ${monthName}</div>
+                        </div>
+                        <div class="time-slots">
+                `;
+                
+                scheduleData.timeSlots.forEach(time => {
+                    const isOccupied = day.slots[time];
+                    const slotClass = isOccupied ? 'occupied' : 'available';
+                    const statusText = isOccupied ? 'RESERVADO' : 'DISPONIBLE';
+                    
+                    html += `
+                        <div class="time-slot ${slotClass}" 
+                             onclick="${isOccupied ? '' : `reserveSlot('${day.day}', '${day.date}', '${monthName}', '${time}')`}">
+                            <div class="slot-content">
+                                <div class="slot-time">${time}</div>
+                                <div class="slot-status">${isOccupied ? '✕' : '✓'} ${statusText}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            scheduleDiv.innerHTML = html;
+        }
+
+        function reserveSlot(day, date, month, time) {
+            const message = `Hola! Quiero reservar un turno para el *${day} ${date} de ${month}* a las *${time}*. ¿Está disponible?`;
+            const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+
+        // Inicializar
+        loadScheduleData();
+
+        // Actualizar cada 30 segundos
+        setInterval(loadScheduleData, 30000);
+    </script>
+</body>
+</html>
