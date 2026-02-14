@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#000000">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <title>NEGRO PADEL - Reservas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #000000 0%, #333333 100%);
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.5em;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .header p {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .schedule-container {
+            padding: 15px;
+        }
+
+        /* DISEÑO MOBILE FIRST - Vista horizontal compacta */
+        .day-selector {
+            display: flex;
+            overflow-x: auto;
+            gap: 8px;
+            padding: 10px 0;
+            margin-bottom: 15px;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+        }
+
+        .day-selector::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .day-selector::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .day-selector::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+
+        .day-tab {
+            min-width: 100px;
+            padding: 12px 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            flex-shrink: 0;
+        }
+
+        .day-tab:hover {
+            background: #e9ecef;
+        }
+
+        .day-tab.active {
+            background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+            color: white;
+            border-color: #357abd;
+            font-weight: bold;
+        }
+
+        .day-tab-name {
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .day-tab-date {
+            font-size: 0.75em;
+            opacity: 0.8;
+        }
+
+        .day-content {
+            display: none;
+        }
+
+        .day-content.active {
+            display: block;
+        }
+
+        .time-slots-mobile {
+            display: grid;
+            gap: 10px;
+        }
+
+        .time-slot {
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .time-slot.available {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            cursor: pointer;
+        }
+
+        .time-slot.available:active {
+            transform: scale(0.98);
+        }
+
+        .time-slot.occupied {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .time-slot.finished {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .slot-content {
+            padding: 15px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .slot-left {
+            flex: 1;
+        }
+
+        .slot-time {
+            font-weight: bold;
+            font-size: 1.3em;
+            margin-bottom: 4px;
+        }
+
+        .slot-status {
+            font-size: 0.75em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .slot-right {
+            text-align: right;
+        }
+
+        .slot-price {
+            font-size: 1.4em;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .slot-discount {
+            background: #ffc107;
+            color: #000;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 0.7em;
+            font-weight: bold;
+            display: inline-block;
+            animation: pulse 2s infinite;
+        }
+
+        .slot-original-price {
+            font-size: 0.8em;
+            text-decoration: line-through;
+            opacity: 0.8;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Vista desktop - Grid de 7 columnas */
+        @media (min-width: 1024px) {
+            .day-selector {
+                display: none;
+            }
+
+            .schedule-container {
+                padding: 20px;
+            }
+
+            .week-grid {
+                display: grid;
+                grid-template-columns: repeat(7, 1fr);
+                gap: 10px;
+            }
+
+            .day-content {
+                display: block !important;
+            }
+
+            .day-column {
+                background: #f8f9fa;
+                border-radius: 10px;
+                overflow: hidden;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+
+            .day-header {
+                background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+                color: white;
+                padding: 10px;
+                text-align: center;
+                font-weight: bold;
+            }
+
+            .day-header-name {
+                font-size: 0.9em;
+                margin-bottom: 3px;
+            }
+
+            .day-header-date {
+                font-size: 0.75em;
+                opacity: 0.9;
+            }
+
+            .time-slots-desktop {
+                padding: 8px;
+            }
+
+            .time-slot {
+                margin-bottom: 8px;
+            }
+
+            .slot-content {
+                padding: 10px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+
+            .slot-time {
+                font-size: 1em;
+            }
+
+            .slot-price {
+                font-size: 1.1em;
+            }
+
+            .slot-status {
+                font-size: 0.7em;
+            }
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            margin-top: 15px;
+            border-radius: 10px;
+            font-size: 0.85em;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
+            width: 25px;
+            height: 25px;
+            border-radius: 5px;
+            flex-shrink: 0;
+        }
+
+        .legend-color.available {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .legend-color.occupied {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+
+        .legend-color.finished {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2em;
+            color: #666;
+        }
+
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #dc3545;
+        }
+    </style>
+</head>
+    
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎾 NEGRO PADEL Y ENCUENTRO 🎾</h1>
+            <p>Hacé click en el turno que querés reservar</p>
+        </div>
+
+        <div class="schedule-container">
+            <div id="schedule" class="loading">
+                Cargando turnos disponibles...
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color available"></div>
+                <span><strong>Disponible</strong></span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color occupied"></div>
+                <span><strong>Ocupado</strong></span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color finished"></div>
+                <span><strong>Finalizado</strong></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cargar configuración de precios -->
+    <script src="config-precios.js"></script>
+
+    <script>
+        // CONFIGURACIÓN API
+        const API_URL = 'https://script.google.com/macros/s/AKfycbyd4O4dWAUnUgGeyok35PCeGSRAbxLu4uLfh6_WQQiOYSREVlkX6Dpru7sI3Fiuusn0/exec';
+        
+        // Estructura de datos para los turnos
+        const scheduleData = {
+            week: [],
+            timeSlots: [
+                '09:00', '10:30', '12:00', '14:00', '15:30', 
+                '17:00', '18:30', '20:00', '21:30', '23:00'
+            ]
+        };
+
+        let currentDayIndex = 0;
+
+        // Cargar datos desde Google Sheets
+        async function loadScheduleData() {
+            try {
+                const response = await fetch(`${API_URL}?action=getTurnos`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    scheduleData.week = result.data.week;
+                    renderSchedule();
+                } else {
+                    throw new Error(result.error || 'Error al cargar datos');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('schedule').innerHTML = 
+                    '<div class="error">Error al cargar turnos. Por favor, recargá la página.</div>';
+            }
+        }
+
+        function renderSchedule() {
+            const scheduleDiv = document.getElementById('schedule');
+            const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            const isMobile = window.innerWidth < 1024;
+            
+            if (isMobile) {
+                // VISTA MOBILE - Tabs horizontales + contenido del día seleccionado
+                let html = '<div class="day-selector">';
+                
+                scheduleData.week.forEach((day, index) => {
+                    const monthName = monthNames[parseInt(day.month) - 1];
+                    const activeClass = index === currentDayIndex ? 'active' : '';
+                    
+                    html += `
+                        <div class="day-tab ${activeClass}" onclick="selectDay(${index})">
+                            <div class="day-tab-name">${day.day}</div>
+                            <div class="day-tab-date">${day.date} ${monthName}</div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                
+                // Contenido de cada día
+                scheduleData.week.forEach((day, dayIndex) => {
+                    const monthName = monthNames[parseInt(day.month) - 1];
+                    const activeClass = dayIndex === currentDayIndex ? 'active' : '';
+                    
+                    html += `
+                        <div class="day-content ${activeClass}" id="day-${dayIndex}">
+                            <div class="time-slots-mobile">
+                    `;
+                    
+                    scheduleData.timeSlots.forEach(time => {
+                        html += renderTimeSlot(day, time, monthName);
+                    });
+                    
+                    html += `
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                scheduleDiv.innerHTML = html;
+                
+            } else {
+                // VISTA DESKTOP - Grid de 7 columnas
+                let html = '<div class="week-grid">';
+                
+                scheduleData.week.forEach((day) => {
+                    const monthName = monthNames[parseInt(day.month) - 1];
+                    
+                    html += `
+                        <div class="day-column">
+                            <div class="day-header">
+                                <div class="day-header-name">${day.day}</div>
+                                <div class="day-header-date">${day.date} ${monthName}</div>
+                            </div>
+                            <div class="time-slots-desktop">
+                    `;
+                    
+                    scheduleData.timeSlots.forEach(time => {
+                        html += renderTimeSlot(day, time, monthName);
+                    });
+                    
+                    html += `
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                scheduleDiv.innerHTML = html;
+            }
+        }
+
+        function renderTimeSlot(day, time, monthName) {
+            const isOccupied = day.slots[time];
+            const fechaTurno = `${day.year}-${day.month.padStart(2, '0')}-${day.date.padStart(2, '0')}`;
+            
+            // Calcular si el turno ya finalizó
+            const esFinalizado = turnoFinalizado(fechaTurno, time);
+            
+            // Si el turno ya finalizó
+            if (esFinalizado) {
+                return `
+                    <div class="time-slot finished">
+                        <div class="slot-content">
+                            <div class="slot-left">
+                                <div class="slot-time">${time}</div>
+                                <div class="slot-status">
+                                    ⏱️ FINALIZADO
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Calcular precio
+            const precioBase = obtenerPrecio(day.day, time);
+            const tieneDescuento = !isOccupied && aplicaDescuento(fechaTurno, time);
+            
+            // Debug
+            if (day.day === 'SÁBADO' && time === '20:00') {
+                console.log('Debug 20:00 Sábado:', {
+                    fechaTurno,
+                    time,
+                    isOccupied,
+                    tieneDescuento,
+                    precioBase,
+                    configDescuento: PRECIOS_CONFIG.descuentoUltimaHora
+                });
+            }
+            
+            const precioFinal = tieneDescuento 
+                ? Math.round(precioBase * (1 - PRECIOS_CONFIG.descuentoUltimaHora.porcentaje / 100))
+                : precioBase;
+            
+            // Determinar clase y estado
+            const slotClass = isOccupied ? 'occupied' : 'available';
+            const statusIcon = isOccupied ? '✕' : '✓';
+            const statusText = isOccupied ? 'RESERVADO' : 'DISPONIBLE';
+            const onclick = isOccupied ? '' : `onclick="reserveSlot('${day.day}', '${day.date}', '${monthName}', '${time}', ${precioFinal})"`;
+            
+            return `
+                <div class="time-slot ${slotClass}" ${onclick}>
+                    <div class="slot-content">
+                        <div class="slot-left">
+                            <div class="slot-time">${time}</div>
+                            <div class="slot-status">
+                                ${statusIcon} ${statusText}
+                            </div>
+                        </div>
+                        <div class="slot-right">
+                            ${tieneDescuento ? `
+                                <div class="slot-discount">🔥 ${PRECIOS_CONFIG.descuentoUltimaHora.porcentaje}% OFF</div>
+                                <div class="slot-original-price">${formatearPrecio(precioBase)}</div>
+                            ` : ''}
+                            <div class="slot-price">${formatearPrecio(precioFinal)}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function selectDay(index) {
+            currentDayIndex = index;
+            
+            // Actualizar tabs
+            document.querySelectorAll('.day-tab').forEach((tab, i) => {
+                tab.classList.toggle('active', i === index);
+            });
+            
+            // Actualizar contenido
+            document.querySelectorAll('.day-content').forEach((content, i) => {
+                content.classList.toggle('active', i === index);
+            });
+        }
+
+        function reserveSlot(day, date, month, time, precio) {
+            const message = `Hola! Quiero reservar un turno para el *${day} ${date} de ${month}* a las *${time}*. Precio: *${formatearPrecio(precio)}*. ¿Está disponible?`;
+            const whatsappUrl = `https://wa.me/${PRECIOS_CONFIG.whatsapp.numero}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+
+        // Manejar cambio de tamaño de ventana
+        window.addEventListener('resize', () => {
+            renderSchedule();
+        });
+
+        // Inicializar
+        loadScheduleData();
+
+        // Actualizar cada 30 segundos
+        setInterval(loadScheduleData, 30000);
+    </script>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker registrado');
+                    })
+                    .catch(function(error) {
+                        console.log('Error registrando ServiceWorker:', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
