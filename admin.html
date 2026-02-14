@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <link rel="manifest" href="manifest-admin.json">
+<meta name="theme-color" content="#000000">
+<link rel="apple-touch-icon" href="icon-192.png">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NEGRO PADEL - Panel de Administración</title>
@@ -827,5 +831,19 @@
         // Actualizar cada 5 minutos
         setInterval(loadScheduleData, 300000);
     </script>
+    <script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('./service-worker.js')
+      .then(function(registration) {
+        console.log('ServiceWorker registrado');
+      })
+      .catch(function(error) {
+        console.log('Error registrando ServiceWorker:', error);
+      });
+  });
+}
+</script>
+
 </body>
 </html>
