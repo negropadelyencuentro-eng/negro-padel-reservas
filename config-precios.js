@@ -83,37 +83,31 @@ function aplicaDescuento(fechaTurno, horaTurno) {
   
   const aplica = minutosRestantes > 0 && minutosRestantes <= PRECIOS_CONFIG.descuentoUltimaHora.minutosAntes;
   
-  // Debug
-  if (aplica || (horaTurno === '17:00' || horaTurno === '20:00')) {
-    console.log('aplicaDescuento:', {
-      fechaTurno,
-      horaTurno,
-      ahora: ahora.toLocaleString('es-AR'),
-      turnoInicia: fechaHoraTurno.toLocaleString('es-AR'),
-      minutosRestantes: Math.round(minutosRestantes),
-      aplica
-    });
-  }
-  
   return aplica;
 }
 
+// DEBUG: Ver estado de turnos
+console.log('🕐 Hora actual del navegador:', new Date().toLocaleString('es-AR'));
+console.log('📍 Zona horaria:', Intl.DateTimeFormat().resolvedOptions().timeZone);
+
 // Función para verificar si un turno ya pasó
 function turnoFinalizado(fechaTurno, horaTurno) {
-  // Obtener fecha/hora actual en Argentina (GMT-3)
+  // Usar hora local del navegador (ya está en zona horaria correcta)
   const ahora = new Date();
   
   // Parsear la fecha del turno (YYYY-MM-DD)
   const [year, month, day] = fechaTurno.split('-').map(n => parseInt(n));
   const [horas, minutos] = horaTurno.split(':').map(n => parseInt(n));
   
-  // Crear fecha del turno
+  // Crear fecha del turno en hora local
   const fechaHoraTurno = new Date(year, month - 1, day, horas, minutos, 0, 0);
   
   // Agregar 90 minutos (duración del turno)
-  fechaHoraTurno.setMinutes(fechaHoraTurno.getMinutes() + 90);
+  const fechaHoraFin = new Date(fechaHoraTurno);
+  fechaHoraFin.setMinutes(fechaHoraFin.getMinutes() + 90);
   
-  return ahora > fechaHoraTurno;
+  // El turno finalizó si ya pasaron los 90 minutos
+  return ahora > fechaHoraFin;
 }
 
 // Función para verificar si un turno está en curso AHORA
