@@ -113,16 +113,24 @@ function turnoFinalizado(fechaTurno, horaTurno) {
   // Agregar 90 minutos (duración del turno)
   fechaHoraTurno.setMinutes(fechaHoraTurno.getMinutes() + 90);
   
-  // Debug
-  if (horaTurno === '09:00' || horaTurno === '17:00') {
-    console.log('turnoFinalizado:', {
-      fechaTurno,
-      horaTurno,
-      ahora: ahora.toLocaleString('es-AR'),
-      turnoTermina: fechaHoraTurno.toLocaleString('es-AR'),
-      yaTermino: ahora > fechaHoraTurno
-    });
-  }
-  
   return ahora > fechaHoraTurno;
+}
+
+// Función para verificar si un turno está en curso AHORA
+function turnoEnCurso(fechaTurno, horaTurno) {
+  const ahora = new Date();
+  
+  // Parsear la fecha del turno (YYYY-MM-DD)
+  const [year, month, day] = fechaTurno.split('-').map(n => parseInt(n));
+  const [horas, minutos] = horaTurno.split(':').map(n => parseInt(n));
+  
+  // Crear fecha de inicio del turno
+  const fechaHoraInicio = new Date(year, month - 1, day, horas, minutos, 0, 0);
+  
+  // Crear fecha de fin del turno (90 minutos después)
+  const fechaHoraFin = new Date(fechaHoraInicio);
+  fechaHoraFin.setMinutes(fechaHoraFin.getMinutes() + 90);
+  
+  // El turno está en curso si estamos entre el inicio y el fin
+  return ahora >= fechaHoraInicio && ahora <= fechaHoraFin;
 }
