@@ -153,6 +153,28 @@
             opacity: 0.5;
         }
 
+        .time-slot.in-progress {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+            cursor: default;
+            opacity: 0.9;
+            border: 2px solid #ff6f00;
+        }
+
+        .time-slot.in-progress .slot-content {
+            animation: pulse-border 2s infinite;
+        }
+
+        @keyframes pulse-border {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.7); }
+            50% { box-shadow: 0 0 0 10px rgba(255, 152, 0, 0); }
+        }
+
+        .slot-player {
+            font-size: 1.2em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
         .slot-content {
             padding: 15px;
             color: white;
@@ -319,6 +341,10 @@
             background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
         }
 
+        .legend-color.in-progress {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+        }
+
         .legend-color.finished {
             background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
         }
@@ -359,6 +385,10 @@
             <div class="legend-item">
                 <div class="legend-color occupied"></div>
                 <span><strong>Ocupado</strong></span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color in-progress"></div>
+                <span><strong>En Curso</strong></span>
             </div>
             <div class="legend-item">
                 <div class="legend-color finished"></div>
@@ -484,10 +514,28 @@
             const isOccupied = day.slots[time];
             const fechaTurno = `${day.year}-${day.month.padStart(2, '0')}-${day.date.padStart(2, '0')}`;
             
-            // Calcular si el turno ya finalizó
-            const esFinalizado = turnoFinalizado(fechaTurno, time);
+            // Calcular el estado del turno
+            const estaEnCurso = turnoEnCurso(fechaTurno, time);
+            const esFinalizado = !estaEnCurso && turnoFinalizado(fechaTurno, time);
             
-            // Si el turno ya finalizó
+            // Si el turno está en curso (NARANJA)
+            if (estaEnCurso) {
+                return `
+                    <div class="time-slot in-progress">
+                        <div class="slot-content">
+                            <div class="slot-left">
+                                <div class="slot-time">${time}</div>
+                                <div class="slot-status">
+                                    🏃 EN CURSO
+                                </div>
+                            </div>
+                            ${isOccupied ? `<div class="slot-right"><div class="slot-player">${isOccupied}</div></div>` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Si el turno ya finalizó (GRIS)
             if (esFinalizado) {
                 return `
                     <div class="time-slot finished">
@@ -506,19 +554,6 @@
             // Calcular precio
             const precioBase = obtenerPrecio(day.day, time);
             const tieneDescuento = !isOccupied && aplicaDescuento(fechaTurno, time);
-            
-            // Debug
-            if (day.day === 'SÁBADO' && time === '20:00') {
-                console.log('Debug 20:00 Sábado:', {
-                    fechaTurno,
-                    time,
-                    isOccupied,
-                    tieneDescuento,
-                    precioBase,
-                    configDescuento: PRECIOS_CONFIG.descuentoUltimaHora
-                });
-            }
-            
             const precioFinal = tieneDescuento 
                 ? Math.round(precioBase * (1 - PRECIOS_CONFIG.descuentoUltimaHora.porcentaje / 100))
                 : precioBase;
