@@ -515,8 +515,15 @@
             const fechaTurno = `${day.year}-${day.month.padStart(2, '0')}-${day.date.padStart(2, '0')}`;
             
             // Calcular el estado del turno
-            const estaEnCurso = turnoEnCurso(fechaTurno, time);
-            const esFinalizado = !estaEnCurso && turnoFinalizado(fechaTurno, time);
+            let estaEnCurso = false;
+            let esFinalizado = false;
+            
+            try {
+                estaEnCurso = typeof turnoEnCurso !== 'undefined' && turnoEnCurso(fechaTurno, time);
+                esFinalizado = !estaEnCurso && typeof turnoFinalizado !== 'undefined' && turnoFinalizado(fechaTurno, time);
+            } catch (e) {
+                console.error('Error al verificar estado del turno:', e);
+            }
             
             // Si el turno está en curso (NARANJA)
             if (estaEnCurso) {
