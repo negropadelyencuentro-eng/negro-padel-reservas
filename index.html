@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#000000">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <title>NEGRO PADEL - Reservas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+            color: white;
+            padding: 20px 15px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 10px;
+        }
+
+        .header-logo {
+            max-width: 80px;
+            height: auto;
+            display: block;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 300;
+            line-height: 1;
+        }
+
+        .header p {
+            font-size: 0.9em;
+            opacity: 0.7;
+            font-weight: 300;
+            letter-spacing: 1px;
+            margin: 0;
+        }
+
+        @media (max-width: 480px) {
+            .header-logo {
+                max-width: 60px;
+            }
+            
+            .header h1 {
+                font-size: 1.3em;
+                letter-spacing: 2px;
+            }
+            
+            .header-top {
+                gap: 12px;
+            }
+            
+            .header p {
+                font-size: 0.8em;
+            }
+        }
+
+        .schedule-container {
+            padding: 15px;
+        }
+
+        /* DISEÑO MOBILE FIRST - Vista horizontal compacta */
+        .day-selector {
+            display: flex;
+            overflow-x: auto;
+            gap: 8px;
+            padding: 10px 0;
+            margin-bottom: 15px;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+        }
+
+        .day-selector::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .day-selector::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .day-selector::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+
+        .day-tab {
+            min-width: 100px;
+            padding: 12px 16px;
+            background: #ffffff;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid #e0e0e0;
+            flex-shrink: 0;
+            color: #000;
+        }
+
+        .day-tab:hover {
+            background: #f5f5f5;
+            border-color: #bdbdbd;
+        }
+
+        .day-tab.active {
+            background: #000000;
+            color: white;
+            border-color: #000000;
+            font-weight: bold;
+        }
+
+        .day-tab-name {
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .day-tab-date {
+            font-size: 0.75em;
+            opacity: 0.8;
+        }
+
+        .day-content {
+            display: none;
+        }
+
+        .day-content.active {
+            display: block;
+        }
+
+        .time-slots-mobile {
+            display: grid;
+            gap: 10px;
+        }
+
+        .time-slot {
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .time-slot.available {
+            background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%);
+            cursor: pointer;
+            border: 2px solid #00c853;
+            color: #000;
+        }
+
+        .time-slot.available:active {
+            transform: scale(0.98);
+            box-shadow: 0 4px 12px rgba(0, 200, 83, 0.3);
+        }
+
+        .time-slot.occupied {
+            background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+            cursor: not-allowed;
+            opacity: 0.85;
+            border: 2px solid #d32f2f;
+        }
+
+        .time-slot.finished {
+            background: linear-gradient(135deg, #424242 0%, #303030 100%);
+            cursor: not-allowed;
+            opacity: 0.5;
+            border: 2px solid #616161;
+        }
+
+        .time-slot.in-progress {
+            background: linear-gradient(135deg, #ff6f00 0%, #ff8f00 100%);
+            cursor: default;
+            opacity: 1;
+            border: 2px solid #ff6f00;
+            color: white;
+        }
+
+        .time-slot.in-progress .slot-content {
+            animation: pulse-border 2s infinite;
+        }
+
+        @keyframes pulse-border {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 111, 0, 0.7); }
+            50% { box-shadow: 0 0 0 10px rgba(255, 111, 0, 0); }
+        }
+
+        .slot-player {
+            font-size: 1.2em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .slot-content {
+            padding: 15px;
+            color: inherit;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .time-slot.available .slot-content {
+            color: #000;
+        }
+
+        .time-slot.occupied .slot-content,
+        .time-slot.finished .slot-content,
+        .time-slot.in-progress .slot-content {
+            color: white;
+        }
+
+        .slot-left {
+            flex: 1;
+        }
+
+        .slot-time {
+            font-weight: bold;
+            font-size: 1.3em;
+            margin-bottom: 4px;
+        }
+
+        .slot-status {
+            font-size: 0.75em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .slot-right {
+            text-align: right;
+        }
+
+        .slot-price {
+            font-size: 1.4em;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .slot-discount {
+            background: #00c853;
+            color: #fff;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 0.7em;
+            font-weight: bold;
+            display: inline-block;
+            animation: pulse 2s infinite;
+        }
+
+        .slot-original-price {
+            font-size: 0.8em;
+            text-decoration: line-through;
+            opacity: 0.8;
+        }
+
+        .slot-promo {
+            background: linear-gradient(135deg, #e91e63 0%, #c2185b 100%);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-size: 0.7em;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 3px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Vista desktop - Grid de 7 columnas */
+        @media (min-width: 1024px) {
+            .day-selector {
+                display: none;
+            }
+
+            .schedule-container {
+                padding: 20px;
+            }
+
+            .week-grid {
+                display: grid;
+                grid-template-columns: repeat(7, 1fr);
+                gap: 10px;
+            }
+
+            .day-content {
+                display: block !important;
+            }
+
+            .day-column {
+                background: #f8f9fa;
+                border-radius: 10px;
+                overflow: hidden;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+
+            .day-header {
+                background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+                color: white;
+                padding: 10px;
+                text-align: center;
+                font-weight: bold;
+            }
+
+            .day-header-name {
+                font-size: 0.9em;
+                margin-bottom: 3px;
+            }
+
+            .day-header-date {
+                font-size: 0.75em;
+                opacity: 0.9;
+            }
+
+            .time-slots-desktop {
+                padding: 8px;
+            }
+
+            .time-slot {
+                margin-bottom: 8px;
+            }
+
+            .slot-content {
+                padding: 10px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+
+            .slot-time {
+                font-size: 1em;
+            }
+
+            .slot-price {
+                font-size: 1.1em;
+            }
+
+            .slot-status {
+                font-size: 0.7em;
+            }
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            margin-top: 15px;
+            border-radius: 10px;
+            font-size: 0.85em;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
+            width: 25px;
+            height: 25px;
+            border-radius: 5px;
+            flex-shrink: 0;
+        }
+
+        .legend-color.available {
+            background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%);
+            border: 2px solid #00c853;
+        }
+
+        .legend-color.occupied {
+            background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+            border: 2px solid #d32f2f;
+        }
+
+        .legend-color.in-progress {
+            background: linear-gradient(135deg, #ff6f00 0%, #ff8f00 100%);
+        }
+
+        .legend-color.finished {
+            background: linear-gradient(135deg, #424242 0%, #303030 100%);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2em;
+            color: #666;
+        }
+
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #dc3545;
+        }
+    </style>
+</head>
+    
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-top">
+                <img src="logo.png" alt="NEGRO" class="header-logo">
+                <h1>PADEL Y ENCUENTRO</h1>
+            </div>
+            <p>Reservá tu turno en segundos</p>
+        </div>
+
+        <div class="schedule-container">
+            <div id="schedule" class="loading">
+                Cargando turnos disponibles...
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color available"></div>
+                <span><strong>Disponible</strong></span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color occupied"></div>
+                <span><strong>Ocupado</strong></span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color in-progress"></div>
+                <span><strong>En Curso</strong></span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color finished"></div>
+                <span><strong>Finalizado</strong></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cargar configuración desde Google Sheets -->
+    <script>
+        // CONFIGURACIÓN API
+        const API_URL = 'https://script.google.com/macros/s/AKfycbyd4O4dWAUnUgGeyok35PCeGSRAbxLu4uLfh6_WQQiOYSREVlkX6Dpru7sI3Fiuusn0/exec';
+        
+        // Estructura de datos para los turnos
+        const scheduleData = {
+            week: [],
+            timeSlots: [
+                '09:00', '10:30', '12:00', '14:00', '15:30', 
+                '17:00', '18:30', '20:00', '21:30', '23:00'
+            ],
+            promociones: {},
+            precios: null,
+            descuentoConfig: null
+        };
+
+        let currentDayIndex = 0;
+
+        // Cargar datos desde Google Sheets
+        async function loadScheduleData() {
+            try {
+                const response = await fetch(`${API_URL}?action=getTurnos`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    scheduleData.week = result.data.week;
+                    
+                    // Cargar promociones y precios
+                    await loadPromociones();
+                    await loadPrecios();
+                    
+                    renderSchedule();
+                } else {
+                    throw new Error(result.error || 'Error al cargar datos');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('schedule').innerHTML = 
+                    '<div class="error">Error al cargar turnos. Por favor, recargá la página.</div>';
+            }
+        }
+
+        async function loadPromociones() {
+            try {
+                const response = await fetch(`${API_URL}?action=getPromociones`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    scheduleData.promociones = result.data || {};
+                }
+            } catch (error) {
+                console.error('Error cargando promociones:', error);
+                scheduleData.promociones = {};
+            }
+        }
+
+        async function loadPrecios() {
+            try {
+                const response = await fetch(`${API_URL}?action=getPrecios`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    scheduleData.precios = result.data.precios || {};
+                    scheduleData.descuentoConfig = result.data.descuento || { activo: false, porcentaje: 10, minutosAntes: 90 };
+                }
+            } catch (error) {
+                console.error('Error cargando precios:', error);
+                // Valores por defecto
+                scheduleData.precios = {
+                    semana: { '09:00': 10000, '10:30': 10000, '12:00': 16000, '14:00': 16000, '15:30': 16000, '17:00': 16000, '18:30': 20000, '20:00': 20000, '21:30': 20000, '23:00': 20000 },
+                    finDeSemana: { '09:00': 16000, '10:30': 16000, '12:00': 16000, '14:00': 16000, '15:30': 16000, '17:00': 16000, '18:30': 20000, '20:00': 20000, '21:30': 20000, '23:00': 20000 }
+                };
+                scheduleData.descuentoConfig = { activo: false, porcentaje: 10, minutosAntes: 90 };
+            }
+        }
+
+        // Funciones de precios (ahora usan datos de scheduleData)
+        function obtenerPrecio(dia, hora) {
+            const diasFinDeSemana = ['SÁBADO', 'DOMINGO'];
+            const esFinDeSemana = diasFinDeSemana.includes(dia);
+            
+            if (!scheduleData.precios) return 20000;
+            
+            if (esFinDeSemana) {
+                return scheduleData.precios.finDeSemana?.[hora] || 20000;
+            } else {
+                return scheduleData.precios.semana?.[hora] || 20000;
+            }
+        }
+
+        function formatearPrecio(precio) {
+            return '$' + precio.toLocaleString('es-AR');
+        }
+
+        function aplicaDescuento(fechaTurno, horaTurno) {
+            if (!scheduleData.descuentoConfig || !scheduleData.descuentoConfig.activo) return false;
+            
+            const ahora = new Date();
+            const [year, month, day] = fechaTurno.split('-').map(n => parseInt(n));
+            const [horas, minutos] = horaTurno.split(':').map(n => parseInt(n));
+            const fechaHoraTurno = new Date(year, month - 1, day, horas, minutos, 0, 0);
+            const minutosRestantes = (fechaHoraTurno - ahora) / 1000 / 60;
+            
+            return minutosRestantes > 0 && minutosRestantes <= scheduleData.descuentoConfig.minutosAntes;
+        }
+
+        function turnoFinalizado(fechaTurno, horaTurno) {
+            const ahora = new Date();
+            const [year, month, day] = fechaTurno.split('-').map(n => parseInt(n));
+            const [horas, minutos] = horaTurno.split(':').map(n => parseInt(n));
+            const fechaHoraTurno = new Date(year, month - 1, day, horas, minutos, 0, 0);
+            const fechaHoraFin = new Date(fechaHoraTurno);
+            fechaHoraFin.setMinutes(fechaHoraFin.getMinutes() + 90);
+            return ahora > fechaHoraFin;
+        }
+
+        function turnoEnCurso(fechaTurno, horaTurno) {
+            const ahora = new Date();
+            const [year, month, day] = fechaTurno.split('-').map(n => parseInt(n));
+            const [horas, minutos] = horaTurno.split(':').map(n => parseInt(n));
+            const fechaHoraInicio = new Date(year, month - 1, day, horas, minutos, 0, 0);
+            const fechaHoraFin = new Date(fechaHoraInicio);
+            fechaHoraFin.setMinutes(fechaHoraFin.getMinutes() + 90);
+            return ahora >= fechaHoraInicio && ahora <= fechaHoraFin;
+        }
+
+        function renderSchedule() {
+            const scheduleDiv = document.getElementById('schedule');
+            const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            const isMobile = window.innerWidth < 1024;
+            
+            if (isMobile) {
+                // VISTA MOBILE - Tabs horizontales + contenido del día seleccionado
+                let html = '<div class="day-selector">';
+                
+                scheduleData.week.forEach((day, index) => {
+                    const monthName = monthNames[parseInt(day.month) - 1];
+                    const activeClass = index === currentDayIndex ? 'active' : '';
+                    
+                    html += `
+                        <div class="day-tab ${activeClass}" onclick="selectDay(${index})">
+                            <div class="day-tab-name">${day.day}</div>
+                            <div class="day-tab-date">${day.date} ${monthName}</div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                
+                // Contenido de cada día
+                scheduleData.week.forEach((day, dayIndex) => {
+                    const monthName = monthNames[parseInt(day.month) - 1];
+                    const activeClass = dayIndex === currentDayIndex ? 'active' : '';
+                    
+                    html += `
+                        <div class="day-content ${activeClass}" id="day-${dayIndex}">
+                            <div class="time-slots-mobile">
+                    `;
+                    
+                    scheduleData.timeSlots.forEach(time => {
+                        html += renderTimeSlot(day, time, monthName);
+                    });
+                    
+                    html += `
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                scheduleDiv.innerHTML = html;
+                
+            } else {
+                // VISTA DESKTOP - Grid de 7 columnas
+                let html = '<div class="week-grid">';
+                
+                scheduleData.week.forEach((day) => {
+                    const monthName = monthNames[parseInt(day.month) - 1];
+                    
+                    html += `
+                        <div class="day-column">
+                            <div class="day-header">
+                                <div class="day-header-name">${day.day}</div>
+                                <div class="day-header-date">${day.date} ${monthName}</div>
+                            </div>
+                            <div class="time-slots-desktop">
+                    `;
+                    
+                    scheduleData.timeSlots.forEach(time => {
+                        html += renderTimeSlot(day, time, monthName);
+                    });
+                    
+                    html += `
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                scheduleDiv.innerHTML = html;
+            }
+        }
+
+        function renderTimeSlot(day, time, monthName) {
+            const isOccupied = day.slots[time];
+            const fechaTurno = `${day.year}-${day.month.padStart(2, '0')}-${day.date.padStart(2, '0')}`;
+            
+            // Calcular el estado del turno
+            let estaEnCurso = false;
+            let esFinalizado = false;
+            
+            try {
+                estaEnCurso = typeof turnoEnCurso !== 'undefined' && turnoEnCurso(fechaTurno, time);
+                esFinalizado = !estaEnCurso && typeof turnoFinalizado !== 'undefined' && turnoFinalizado(fechaTurno, time);
+            } catch (e) {
+                console.error('Error al verificar estado del turno:', e);
+            }
+            
+            // Si el turno está en curso (NARANJA)
+            if (estaEnCurso) {
+                return `
+                    <div class="time-slot in-progress">
+                        <div class="slot-content">
+                            <div class="slot-left">
+                                <div class="slot-time">${time}</div>
+                                <div class="slot-status">
+                                    🏃 EN CURSO
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Si el turno ya finalizó (GRIS)
+            if (esFinalizado) {
+                return `
+                    <div class="time-slot finished">
+                        <div class="slot-content">
+                            <div class="slot-left">
+                                <div class="slot-time">${time}</div>
+                                <div class="slot-status">
+                                    ⏱️ FINALIZADO
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Calcular precio
+            const precioBase = obtenerPrecio(day.day, time);
+            const tieneDescuento = !isOccupied && aplicaDescuento(fechaTurno, time);
+            const porcentajeDescuento = scheduleData.descuentoConfig?.porcentaje || 10;
+            const precioFinal = tieneDescuento 
+                ? Math.round(precioBase * (1 - porcentajeDescuento / 100))
+                : precioBase;
+            
+            // Verificar si hay promoción para este turno
+            const promoKey = `${day.day}-${time}`;
+            const promocion = scheduleData.promociones[promoKey];
+            
+            // Determinar clase y estado
+            const slotClass = isOccupied ? 'occupied' : 'available';
+            const statusIcon = isOccupied ? '✕' : '✓';
+            const statusText = isOccupied ? 'RESERVADO' : 'DISPONIBLE';
+            const onclick = isOccupied ? '' : `onclick="reserveSlot('${day.day}', '${day.date}', '${monthName}', '${time}', ${precioFinal})"`;
+            
+            return `
+                <div class="time-slot ${slotClass}" ${onclick}>
+                    <div class="slot-content">
+                        <div class="slot-left">
+                            <div class="slot-time">${time}</div>
+                            <div class="slot-status">
+                                ${statusIcon} ${statusText}
+                            </div>
+                            ${promocion && !isOccupied ? `<div class="slot-promo">🎁 ${promocion}</div>` : ''}
+                        </div>
+                        <div class="slot-right">
+                            ${tieneDescuento ? `
+                                <div class="slot-discount">🔥 ${porcentajeDescuento}% OFF</div>
+                                <div class="slot-original-price">${formatearPrecio(precioBase)}</div>
+                            ` : ''}
+                            <div class="slot-price">${formatearPrecio(precioFinal)}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function selectDay(index) {
+            currentDayIndex = index;
+            
+            // Actualizar tabs
+            document.querySelectorAll('.day-tab').forEach((tab, i) => {
+                tab.classList.toggle('active', i === index);
+            });
+            
+            // Actualizar contenido
+            document.querySelectorAll('.day-content').forEach((content, i) => {
+                content.classList.toggle('active', i === index);
+            });
+        }
+
+        function reserveSlot(day, date, month, time, precio) {
+            const message = `Hola! Quiero reservar un turno para el *${day} ${date} de ${month}* a las *${time}*. Precio: *${formatearPrecio(precio)}*. ¿Está disponible?`;
+            const whatsappUrl = `https://wa.me/5493584294011?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+
+        // Manejar cambio de tamaño de ventana
+        window.addEventListener('resize', () => {
+            renderSchedule();
+        });
+
+        // Inicializar
+        loadScheduleData();
+
+        // Actualizar cada 30 segundos
+        setInterval(loadScheduleData, 30000);
+    </script>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker registrado');
+                    })
+                    .catch(function(error) {
+                        console.log('Error registrando ServiceWorker:', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
