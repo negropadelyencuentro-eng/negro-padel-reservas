@@ -1054,14 +1054,24 @@
                 const response = await fetch(`${API_URL}?action=getPrecios`);
                 const result = await response.json();
                 
+                console.log('📦 Respuesta de getPrecios en admin:', result);
+                
                 if (result.success) {
                     const { precios, descuento } = result.data;
+                    
+                    console.log('🏷️ Precios recibidos:', precios);
+                    console.log('🎯 Descuento recibido:', descuento);
                     
                     // Cargar precios de semana
                     if (precios.semana) {
                         for (let hora in precios.semana) {
                             const input = document.getElementById(`precio-semana-${hora}`);
-                            if (input) input.value = precios.semana[hora];
+                            if (input) {
+                                input.value = precios.semana[hora];
+                                console.log(`✅ Cargado semana ${hora}: ${precios.semana[hora]}`);
+                            } else {
+                                console.warn(`⚠️ No encontrado input: precio-semana-${hora}`);
+                            }
                         }
                     }
                     
@@ -1069,7 +1079,12 @@
                     if (precios.finDeSemana) {
                         for (let hora in precios.finDeSemana) {
                             const input = document.getElementById(`precio-finDeSemana-${hora}`);
-                            if (input) input.value = precios.finDeSemana[hora];
+                            if (input) {
+                                input.value = precios.finDeSemana[hora];
+                                console.log(`✅ Cargado fin de semana ${hora}: ${precios.finDeSemana[hora]}`);
+                            } else {
+                                console.warn(`⚠️ No encontrado input: precio-finDeSemana-${hora}`);
+                            }
                         }
                     }
                     
