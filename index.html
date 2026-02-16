@@ -525,6 +525,7 @@
                 if (result.success) {
                     scheduleData.promociones = result.data || {};
                     console.log('✅ Promociones cargadas:', scheduleData.promociones);
+                    console.log('📊 Total de promociones:', Object.keys(scheduleData.promociones).length);
                 }
             } catch (error) {
                 console.error('❌ Error cargando promociones:', error);
