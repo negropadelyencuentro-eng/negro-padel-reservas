@@ -1,6 +1,10 @@
-// =========================================
+================================================================================
+admin:1223 📋 CÓDIGO ACTUALIZADO PARA config-precios.js
+admin:1224 ================================================================================
+
+admin:1225 // =========================================
 // CONFIGURACIÓN DE PRECIOS - NEGRO PADEL
-// Generado automáticamente: 16/2/2026, 07:42:58
+// Generado automáticamente: 16/2/2026, 07:47:44
 // =========================================
 
 const PRECIOS_CONFIG = {
@@ -85,3 +89,7 @@ function turnoFinalizado(fechaTurno, horaTurno) {
   
   return ahora > fechaHoraTurno;
 }
+admin:1226 
+================================================================================
+admin:1227 ⚠️ IMPORTANTE: Copiá este código y pegalo en config-precios.js
+admin:1228 
