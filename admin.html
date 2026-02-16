@@ -1136,10 +1136,7 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    showMessage('✅ Configuración guardada en Google Sheets correctamente!', 'success');
-                    
-                    // Generar código para config-precios.js
-                    generarCodigoConfigPrecios(preciosSemana, preciosFinDeSemana, descuentoConfig);
+                    showMessage('✅ Precios guardados correctamente!', 'success');
                 } else {
                     throw new Error(result.error);
                 }
@@ -1149,88 +1146,6 @@
             } finally {
                 disableButtons(false);
             }
-        }
-
-        function generarCodigoConfigPrecios(semana, finDeSemana, descuento) {
-            const fecha = new Date().toLocaleString('es-AR');
-            const codigo = `// =========================================
-// CONFIGURACIÓN DE PRECIOS - NEGRO PADEL
-// Generado automáticamente: ${fecha}
-// =========================================
-
-const PRECIOS_CONFIG = {
-  precios: {
-    semana: ${JSON.stringify(semana, null, 6)},
-    finDeSemana: ${JSON.stringify(finDeSemana, null, 6)}
-  },
-  
-  descuentoUltimaHora: {
-    activo: ${descuento.activo},
-    porcentaje: ${descuento.porcentaje},
-    minutosAntes: ${descuento.minutosAntes}
-  },
-  
-  whatsapp: {
-    numero: '5493584294011'
-  }
-};
-
-// Función para obtener precio según día y hora
-function obtenerPrecio(dia, hora) {
-  const diasFinDeSemana = ['SÁBADO', 'DOMINGO'];
-  const esFinDeSemana = diasFinDeSemana.includes(dia);
-  
-  if (esFinDeSemana) {
-    return PRECIOS_CONFIG.precios.finDeSemana[hora] || 20000;
-  } else {
-    return PRECIOS_CONFIG.precios.semana[hora] || 20000;
-  }
-}
-
-// Función para formatear precio
-function formatearPrecio(precio) {
-  return '$' + precio.toLocaleString('es-AR');
-}
-
-// Función para calcular si aplica descuento
-function aplicaDescuento(fechaTurno, horaTurno) {
-  if (!PRECIOS_CONFIG.descuentoUltimaHora.activo) return false;
-  
-  const ahora = new Date();
-  const [horas, minutos] = horaTurno.split(':');
-  const fechaHoraTurno = new Date(fechaTurno);
-  fechaHoraTurno.setHours(parseInt(horas), parseInt(minutos), 0, 0);
-  
-  const minutosRestantes = (fechaHoraTurno - ahora) / 1000 / 60;
-  
-  return minutosRestantes > 0 && minutosRestantes <= PRECIOS_CONFIG.descuentoUltimaHora.minutosAntes;
-}
-
-// Función para verificar si un turno ya pasó
-function turnoFinalizado(fechaTurno, horaTurno) {
-  const ahora = new Date();
-  const [horas, minutos] = horaTurno.split(':');
-  const fechaHoraTurno = new Date(fechaTurno);
-  fechaHoraTurno.setHours(parseInt(horas), parseInt(minutos), 0, 0);
-  
-  // Agregar 90 minutos (duración del turno)
-  fechaHoraTurno.setMinutes(fechaHoraTurno.getMinutes() + 90);
-  
-  return ahora > fechaHoraTurno;
-}`;
-            
-            console.log('\n' + '='.repeat(80));
-            console.log('📋 CÓDIGO ACTUALIZADO PARA config-precios.js');
-            console.log('='.repeat(80) + '\n');
-            console.log(codigo);
-            console.log('\n' + '='.repeat(80));
-            console.log('⚠️ IMPORTANTE: Copiá este código y pegalo en config-precios.js');
-            console.log('='.repeat(80) + '\n');
-            
-            // Mostrar alerta con instrucciones
-            setTimeout(() => {
-                alert(`✅ Configuración guardada en Google Sheets!\n\n⚠️ PASO FINAL:\n\n1. Abrí la Consola del navegador (F12)\n2. Copiá el código que aparece\n3. Reemplazá el contenido del archivo config-precios.js en GitHub\n4. Los cambios se reflejarán en la vista pública\n\nEl código ya está en la consola del navegador.`);
-            }, 500);
         }
 
         // ========================================
