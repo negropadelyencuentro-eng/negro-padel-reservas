@@ -550,13 +550,22 @@
         }
 
         function aplicaDescuento(fechaTurno, horaTurno) {
-            if (!scheduleData.descuentoConfig || !scheduleData.descuentoConfig.activo) return false;
+            if (!scheduleData.descuentoConfig) return false;
+            
+            // Aceptar tanto booleano como string "true"
+            const activo = scheduleData.descuentoConfig.activo === true || 
+                           scheduleData.descuentoConfig.activo === 'true' ||
+                           scheduleData.descuentoConfig.activo === 1;
+            
+            if (!activo) return false;
             
             const ahora = new Date();
             const [year, month, day] = fechaTurno.split('-').map(n => parseInt(n));
             const [horas, minutos] = horaTurno.split(':').map(n => parseInt(n));
             const fechaHoraTurno = new Date(year, month - 1, day, horas, minutos, 0, 0);
             const minutosRestantes = (fechaHoraTurno - ahora) / 1000 / 60;
+            
+            console.log(`⏱️ Descuento ${horaTurno}: faltan ${Math.round(minutosRestantes)} min (límite: ${scheduleData.descuentoConfig.minutosAntes})`);
             
             return minutosRestantes > 0 && minutosRestantes <= scheduleData.descuentoConfig.minutosAntes;
         }
