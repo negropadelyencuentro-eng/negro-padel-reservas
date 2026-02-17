@@ -287,8 +287,19 @@
             opacity: 0.8;
         }
 
-        .slot-promo {
-            background: linear-gradient(135deg, #e91e63 0%, #c2185b 100%);
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.2s infinite;
+            border-radius: 12px;
+            height: 80px;
+            margin-bottom: 10px;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
             color: white;
             padding: 4px 8px;
             border-radius: 5px;
@@ -490,18 +501,24 @@
 
         let currentDayIndex = 0;
 
-        // Cargar datos desde Google Sheets
+        // Cargar TODO en una sola llamada - MÁS RÁPIDO
         async function loadScheduleData() {
             try {
-                const response = await fetch(`${API_URL}?action=getTurnos`);
+                // Mostrar skeleton mientras carga
+                document.getElementById('schedule').innerHTML = `
+                    <div style="padding: 15px;">
+                        ${Array(6).fill('<div class="skeleton"></div>').join('')}
+                    </div>
+                `;
+
+                const response = await fetch(`${API_URL}?action=getTodo`);
                 const result = await response.json();
                 
                 if (result.success) {
-                    scheduleData.week = result.data.week;
-                    
-                    // Cargar promociones y precios
-                    await loadPromociones();
-                    await loadPrecios();
+                    scheduleData.week            = result.data.week;
+                    scheduleData.precios         = result.data.precios;
+                    scheduleData.descuentoConfig = result.data.descuento;
+                    scheduleData.promociones     = result.data.promociones || {};
                     
                     renderSchedule();
                 } else {
@@ -511,50 +528,6 @@
                 console.error('Error:', error);
                 document.getElementById('schedule').innerHTML = 
                     '<div class="error">Error al cargar turnos. Por favor, recargá la página.</div>';
-            }
-        }
-
-        async function loadPromociones() {
-            try {
-                console.log('🔄 Cargando promociones desde API...');
-                const response = await fetch(`${API_URL}?action=getPromociones`);
-                const result = await response.json();
-                
-                console.log('📦 Respuesta de promociones:', result);
-                
-                if (result.success) {
-                    scheduleData.promociones = result.data || {};
-                    console.log('✅ Promociones cargadas:', scheduleData.promociones);
-                    console.log('📊 Total de promociones:', Object.keys(scheduleData.promociones).length);
-                }
-            } catch (error) {
-                console.error('❌ Error cargando promociones:', error);
-                scheduleData.promociones = {};
-            }
-        }
-
-        async function loadPrecios() {
-            try {
-                console.log('🔄 Cargando precios desde API...');
-                const response = await fetch(`${API_URL}?action=getPrecios`);
-                const result = await response.json();
-                
-                console.log('📦 Respuesta de precios:', result);
-                
-                if (result.success) {
-                    scheduleData.precios = result.data.precios || {};
-                    scheduleData.descuentoConfig = result.data.descuento || { activo: false, porcentaje: 10, minutosAntes: 90 };
-                    console.log('✅ Precios cargados:', scheduleData.precios);
-                    console.log('✅ Descuentos:', scheduleData.descuentoConfig);
-                }
-            } catch (error) {
-                console.error('❌ Error cargando precios:', error);
-                // Valores por defecto
-                scheduleData.precios = {
-                    semana: { '09:00': 10000, '10:30': 10000, '12:00': 16000, '14:00': 16000, '15:30': 16000, '17:00': 16000, '18:30': 20000, '20:00': 20000, '21:30': 20000, '23:00': 20000 },
-                    finDeSemana: { '09:00': 16000, '10:30': 16000, '12:00': 16000, '14:00': 16000, '15:30': 16000, '17:00': 16000, '18:30': 20000, '20:00': 20000, '21:30': 20000, '23:00': 20000 }
-                };
-                scheduleData.descuentoConfig = { activo: false, porcentaje: 10, minutosAntes: 90 };
             }
         }
 
