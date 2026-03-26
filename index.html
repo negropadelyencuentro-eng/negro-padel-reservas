@@ -6,7 +6,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#000000">
     <link rel="apple-touch-icon" href="icon-192.png">
-    <title>NEGRO PADEL - Reservas</title>
+    <title>NEGRO PADEL</title>
     <style>
         * {
             margin: 0;
@@ -443,6 +443,94 @@
             padding: 40px;
             color: #dc3545;
         }
+
+        /* ── TABS DE SECCIÓN (Reservas / Torneos) ── */
+        .section-nav {
+            display: flex;
+            background: #111;
+            border-bottom: 2px solid #222;
+        }
+
+        .section-tab {
+            flex: 1;
+            padding: 14px 10px;
+            text-align: center;
+            color: rgba(255,255,255,0.45);
+            font-size: 0.85em;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-bottom: 3px solid transparent;
+            user-select: none;
+        }
+
+        .section-tab:hover {
+            color: rgba(255,255,255,0.8);
+            background: rgba(255,255,255,0.04);
+        }
+
+        .section-tab.active {
+            color: #fff;
+            border-bottom: 3px solid #fff;
+            background: rgba(255,255,255,0.06);
+        }
+
+        .section-tab .tab-icon {
+            display: block;
+            font-size: 1.3em;
+            margin-bottom: 3px;
+        }
+
+        /* ── PANELS ── */
+        .section-panel {
+            display: none;
+        }
+
+        .section-panel.active {
+            display: block;
+        }
+
+        /* ── IFRAME TORNEOS ── */
+        .torneos-iframe-wrap {
+            width: 100%;
+            height: calc(100vh - 160px);
+            min-height: 500px;
+            overflow: hidden;
+            background: #f8f8f8;
+        }
+
+        .torneos-iframe-wrap iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        .torneos-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 300px;
+            color: #999;
+            font-size: 0.9em;
+            gap: 14px;
+        }
+
+        .torneos-spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid #e5e5e5;
+            border-top-color: #16a34a;
+            border-radius: 50%;
+            animation: spin-tab 0.7s linear infinite;
+        }
+
+        @keyframes spin-tab {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
     
@@ -456,6 +544,20 @@
             <p>Reservá tu turno en segundos</p>
         </div>
 
+        <!-- ── TABS DE SECCIÓN ── -->
+        <div class="section-nav">
+            <div class="section-tab active" id="tab-reservas" onclick="switchSection('reservas')">
+                <span class="tab-icon">🎾</span>
+                Reservas
+            </div>
+            <div class="section-tab" id="tab-torneos" onclick="switchSection('torneos')">
+                <span class="tab-icon">🏆</span>
+                Torneos
+            </div>
+        </div>
+
+        <!-- ── PANEL: RESERVAS (contenido original) ── -->
+        <div class="section-panel active" id="panel-reservas">
         <div class="schedule-container">
             <div id="schedule" class="loading">
                 Cargando turnos disponibles...
@@ -785,6 +887,22 @@
         setInterval(loadScheduleData, 30000);
     </script>
 
+        </div><!-- /schedule-container -->
+        </div><!-- /panel-reservas -->
+
+        <!-- ── PANEL: TORNEOS ── -->
+        <div class="section-panel" id="panel-torneos">
+            <div class="torneos-iframe-wrap">
+                <iframe
+                    id="torneos-frame"
+                    src=""
+                    title="Torneos Negro Padel"
+                    allow="fullscreen"
+                    loading="lazy"
+                ></iframe>
+            </div>
+        </div>
+
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
@@ -809,6 +927,61 @@
     ">
         © 2026 NEGRO PADEL Y ENCUENTRO · Todos los derechos reservados
     </div>
+
+
+    <script>
+        // ── SWITCH DE SECCIONES ──────────────────────────────
+        const TORNEOS_URL = 'https://torneos.negropadel.com.ar'; // <-- cambiá por tu URL real
+        let torneosLoaded = false;
+
+        function switchSection(section) {
+            // Tabs
+            document.querySelectorAll('.section-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-' + section).classList.add('active');
+
+            // Panels
+            document.querySelectorAll('.section-panel').forEach(p => p.classList.remove('active'));
+            document.getElementById('panel-' + section).classList.add('active');
+
+            // Cargar iframe de torneos la primera vez que se abre
+            if (section === 'torneos' && !torneosLoaded) {
+                torneosLoaded = true;
+                const frame = document.getElementById('torneos-frame');
+                const wrap  = frame.parentElement;
+
+                // Mostrar spinner mientras carga
+                wrap.innerHTML = '<div class="torneos-loading"><div class="torneos-spinner"></div><span>Cargando torneos...</span></div>';
+
+                const newFrame = document.createElement('iframe');
+                newFrame.id    = 'torneos-frame';
+                newFrame.src   = TORNEOS_URL;
+                newFrame.title = 'Torneos Negro Padel';
+                newFrame.allow = 'fullscreen';
+                newFrame.style.cssText = 'width:100%;height:100%;border:none;display:block;';
+
+                newFrame.onload = () => {
+                    wrap.innerHTML = '';
+                    wrap.appendChild(newFrame);
+                };
+
+                // Fallback: si tarda más de 8 segundos, mostrar igual
+                setTimeout(() => {
+                    if (wrap.querySelector('.torneos-loading')) {
+                        wrap.innerHTML = '';
+                        wrap.appendChild(newFrame);
+                    }
+                }, 8000);
+            }
+
+            // Scroll al top al cambiar de sección
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Si la URL tiene #torneos al abrir, activar esa tab
+        if (window.location.hash === '#torneos') {
+            switchSection('torneos');
+        }
+    </script>
 
 </body>
 </html>
