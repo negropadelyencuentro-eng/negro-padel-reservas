@@ -888,16 +888,22 @@
             window.open(whatsappUrl, '_blank');
         }
 
-        // Manejar cambio de tamaño de ventana
+        // Manejar cambio de tamaño de ventana - solo si reservas está activo
         window.addEventListener('resize', () => {
-            renderSchedule();
+            if (document.getElementById('panel-reservas').classList.contains('active')) {
+                renderSchedule();
+            }
         });
 
         // Inicializar
         loadScheduleData();
 
-        // Actualizar cada 30 segundos
-        setInterval(loadScheduleData, 30000);
+        // Actualizar cada 30 segundos SOLO si el panel de reservas está activo
+        setInterval(() => {
+            if (document.getElementById('panel-reservas').classList.contains('active')) {
+                loadScheduleData();
+            }
+        }, 30000);
     </script>
 
         </div><!-- /schedule-container -->
@@ -944,13 +950,14 @@
 
     <script>
         // ── SWITCH DE SECCIONES ──────────────────────────────
-        const TORNEOS_URL = 'https://torneos.negropadel.com'; // <-- cambiá por tu URL real
+        const TORNEOS_URL = 'https://torneos.negropadel.com.ar'; // <-- cambiá por tu URL real
+        window._torneosLoaded = false; // persiste entre rerenders
 
         // Detectar si corre como PWA standalone en iOS
         const isIOSStandalone = window.navigator.standalone === true;
         // En iOS standalone, los iframes de dominios cruzados pueden fallar
         // En ese caso abrimos en nueva ventana como fallback
-        let torneosLoaded = false;
+        // torneosLoaded is window._torneosLoaded
 
         function switchSection(section) {
             // Tabs
@@ -967,8 +974,8 @@
             if (section === 'torneos') {
                 // En iOS PWA standalone, los iframes cross-origin son problemáticos
                 // Usamos iframe normal y si falla, mostramos botón de abrir
-                if (!torneosLoaded) {
-                    torneosLoaded = true;
+                if (!window._torneosLoaded) {
+                    window._torneosLoaded = true;
                     const wrap = document.getElementById('panel-torneos').querySelector('.torneos-iframe-wrap');
 
                     wrap.innerHTML = '<div class="torneos-loading"><div class="torneos-spinner"></div><span>Cargando torneos...</span></div>';
