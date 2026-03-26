@@ -1,21 +1,43 @@
 {
-  "name": "Negro Padel",
+  "name": "Negro Padel y Encuentro",
   "short_name": "Negro Padel",
+  "description": "Reservá canchas y seguí los torneos de Negro Padel y Encuentro",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#1e3c72",
+  "background_color": "#000000",
   "theme_color": "#000000",
   "orientation": "portrait",
+  "lang": "es",
   "icons": [
     {
       "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
-  ]
+  ],
+  "shortcuts": [
+    {
+      "name": "Reservas",
+      "short_name": "Reservas",
+      "description": "Reservá tu cancha",
+      "url": "./index.html#reservas",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Torneos",
+      "short_name": "Torneos",
+      "description": "Seguí los torneos en vivo",
+      "url": "./index.html#torneos",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "categories": ["sports", "lifestyle"]
 }
